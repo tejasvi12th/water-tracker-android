@@ -89,7 +89,7 @@ class WaterService : Service() {
         handler.removeCallbacks(reminderRunnable)
         handler.postDelayed(
             reminderRunnable,
-            REMINDER_DELAY_MINUTES * 60 * 1000
+            REMINDER_DELAY_MINUTES * 2 * 1000
         )
     }
 
