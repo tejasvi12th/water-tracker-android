@@ -39,6 +39,22 @@ val glasses = waterMl / glassSize
         findViewById<Button>(R.id.settingsButton).setOnClickListener {
     startActivity(Intent(this, SettingsActivity::class.java))
 }
+override fun onResume() {
+    super.onResume()
+
+    val waterPrefs = getSharedPreferences("water_prefs", MODE_PRIVATE)
+    val settingsPrefs = getSharedPreferences("settings_prefs", MODE_PRIVATE)
+
+    val waterMl = waterPrefs.getInt("water_ml", 0)
+    val glassSize = settingsPrefs.getInt("glass_size", 250)
+    val dailyGoal = settingsPrefs.getInt("daily_goal", 16)
+
+    findViewById<TextView>(R.id.glassText).text =
+        "${waterMl / glassSize} / $dailyGoal glasses"
+
+    findViewById<TextView>(R.id.mlText).text =
+        "$waterMl ml"
+}
 
 
         findViewById<Button>(R.id.historyButton).setOnClickListener {
