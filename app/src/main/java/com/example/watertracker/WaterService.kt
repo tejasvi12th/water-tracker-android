@@ -20,28 +20,6 @@ class WaterService : Service() {
     companion object {
         const val ACTION_ADD_WATER = "ADD_WATER"
         const val CHANNEL_ID = "water_tracker_channel"
-
-        private fun glassSize(): Int {
-    return getSharedPreferences("settings_prefs", MODE_PRIVATE)
-        .getInt("glass_size", 250)
-}
-
-private fun dailyGoal(): Int {
-    return getSharedPreferences("settings_prefs", MODE_PRIVATE)
-        .getInt("daily_goal", 16)
-}
-
-private fun reminderDelayMinutes(): Long {
-    return getSharedPreferences("settings_prefs", MODE_PRIVATE)
-        .getInt("reminder_delay", 45)
-        .toLong()
-}
-
-private fun remindersEnabled(): Boolean {
-    return getSharedPreferences("settings_prefs", MODE_PRIVATE)
-        .getBoolean("reminders_enabled", true)
-}
-
     }
 
     private var waterMl = 0
@@ -53,14 +31,17 @@ private fun remindersEnabled(): Boolean {
         showReminderNotification()
     }
 
+    // ---------- LIFECYCLE ----------
+
     override fun onCreate() {
         super.onCreate()
         loadData()
         resetIfNewDay()
         startForeground(1, createNotification())
+
         if (remindersEnabled()) {
-    scheduleReminder()
-}
+            scheduleReminder()
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -75,8 +56,9 @@ private fun remindersEnabled(): Boolean {
     // ---------- CORE LOGIC ----------
 
     private fun addWater() {
-       waterMl += glassSize()
-glasses = waterMl / glassSize()
+        val glassSize = glassSize()
+        waterMl += glassSize
+        glasses = waterMl / glassSize
 
         saveData()
         updateNotification()
@@ -96,7 +78,7 @@ glasses = waterMl / glassSize()
     // ---------- STORAGE ----------
 
     private fun saveData() {
-        val prefs = getSharedPreferences("water_prefs", MODE_PRIVATE)
+        val prefs = applicationContext.getSharedPreferences("water_prefs", MODE_PRIVATE)
         prefs.edit()
             .putInt("water_ml", waterMl)
             .putString("date", lastDate)
@@ -104,10 +86,37 @@ glasses = waterMl / glassSize()
     }
 
     private fun loadData() {
-        val prefs = getSharedPreferences("water_prefs", MODE_PRIVATE)
+        val prefs = applicationContext.getSharedPreferences("water_prefs", MODE_PRIVATE)
         waterMl = prefs.getInt("water_ml", 0)
         lastDate = prefs.getString("date", today()) ?: today()
-        glasses = waterMl / GLASS_ML
+        glasses = waterMl / glassSize()
+    }
+
+    // ---------- SETTINGS HELPERS ----------
+
+    private fun glassSize(): Int {
+        return applicationContext
+            .getSharedPreferences("settings_prefs", MODE_PRIVATE)
+            .getInt("glass_size", 250)
+    }
+
+    private fun dailyGoal(): Int {
+        return applicationContext
+            .getSharedPreferences("settings_prefs", MODE_PRIVATE)
+            .getInt("daily_goal", 16)
+    }
+
+    private fun reminderDelayMinutes(): Long {
+        return applicationContext
+            .getSharedPreferences("settings_prefs", MODE_PRIVATE)
+            .getInt("reminder_delay", 45)
+            .toLong()
+    }
+
+    private fun remindersEnabled(): Boolean {
+        return applicationContext
+            .getSharedPreferences("settings_prefs", MODE_PRIVATE)
+            .getBoolean("reminders_enabled", true)
     }
 
     // ---------- REMINDER ----------
@@ -115,11 +124,11 @@ glasses = waterMl / glassSize()
     private fun scheduleReminder() {
         handler.removeCallbacks(reminderRunnable)
         if (remindersEnabled()) {
-    handler.postDelayed(
-        reminderRunnable,
-        reminderDelayMinutes() * 60 * 1000
-    )
-}
+            handler.postDelayed(
+                reminderRunnable,
+                reminderDelayMinutes() * 60 * 1000
+            )
+        }
     }
 
     private fun showReminderNotification() {
