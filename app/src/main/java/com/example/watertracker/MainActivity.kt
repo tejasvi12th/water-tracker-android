@@ -22,8 +22,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.historyButton).setOnClickListener {
-            Toast.makeText(this, "Weekly history coming soon", Toast.LENGTH_SHORT).show()
-        }
+    startActivity(Intent(this, HistoryActivity::class.java))
+}
+
 
         // Initial UI update
         updateUI()
