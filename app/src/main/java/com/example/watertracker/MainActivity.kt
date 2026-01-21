@@ -35,8 +35,9 @@ class MainActivity : AppCompatActivity() {
 
         // Buttons (we'll wire them next)
         findViewById<Button>(R.id.settingsButton).setOnClickListener {
-            // Settings screen coming next
-        }
+    startActivity(Intent(this, SettingsActivity::class.java))
+}
+
 
         findViewById<Button>(R.id.historyButton).setOnClickListener {
             // History screen coming next
