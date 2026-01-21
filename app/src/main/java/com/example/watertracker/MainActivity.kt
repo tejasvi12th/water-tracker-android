@@ -19,13 +19,15 @@ class MainActivity : AppCompatActivity() {
         val mlText = findViewById<TextView>(R.id.mlText)
         val streakText = findViewById<TextView>(R.id.streakText)
 
-        val prefs = getSharedPreferences("water_prefs", MODE_PRIVATE)
-        val waterMl = prefs.getInt("water_ml", 0)
+       val waterPrefs = getSharedPreferences("water_prefs", MODE_PRIVATE)
+       val settingsPrefs = getSharedPreferences("settings_prefs", MODE_PRIVATE)
 
-        val glassSize = 250
-        val dailyGoal = 16
+       val waterMl = waterPrefs.getInt("water_ml", 0)
 
-        val glasses = waterMl / glassSize
+val glassSize = settingsPrefs.getInt("glass_size", 250)
+val dailyGoal = settingsPrefs.getInt("daily_goal", 16)
+
+val glasses = waterMl / glassSize
 
         glassText.text = "$glasses / $dailyGoal glasses"
         mlText.text = "$waterMl ml"
