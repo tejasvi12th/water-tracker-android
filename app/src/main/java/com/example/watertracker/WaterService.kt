@@ -20,6 +20,8 @@ class WaterService : Service() {
     companion object {
         const val ACTION_ADD_WATER = "ADD_WATER"
         const val CHANNEL_ID = "water_tracker_channel"
+        const val ACTION_REFRESH = "REFRESH"
+
     }
 
     private var waterMl = 0
@@ -75,12 +77,14 @@ class WaterService : Service() {
         }
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_ADD_WATER) {
-            addWater()
-        }
-        return START_STICKY
+  override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    when (intent?.action) {
+        ACTION_ADD_WATER -> addWater()
+        ACTION_REFRESH -> updateNotification()
     }
+    return START_STICKY
+}
+
 
     override fun onBind(intent: Intent?): IBinder? = null
 
