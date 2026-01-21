@@ -5,6 +5,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Switch
 import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
 
 class SettingsActivity : AppCompatActivity() {
 
