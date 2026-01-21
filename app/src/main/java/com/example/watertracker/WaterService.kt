@@ -16,9 +16,27 @@ class WaterService : Service() {
         const val ACTION_ADD_WATER = "ADD_WATER"
         const val CHANNEL_ID = "water_tracker_channel"
 
-        const val GLASS_ML = 250
-        const val DAILY_GOAL_GLASSES = 16
-        const val REMINDER_DELAY_MINUTES = 45L
+        private fun glassSize(): Int {
+    return getSharedPreferences("settings_prefs", MODE_PRIVATE)
+        .getInt("glass_size", 250)
+}
+
+private fun dailyGoal(): Int {
+    return getSharedPreferences("settings_prefs", MODE_PRIVATE)
+        .getInt("daily_goal", 16)
+}
+
+private fun reminderDelayMinutes(): Long {
+    return getSharedPreferences("settings_prefs", MODE_PRIVATE)
+        .getInt("reminder_delay", 45)
+        .toLong()
+}
+
+private fun remindersEnabled(): Boolean {
+    return getSharedPreferences("settings_prefs", MODE_PRIVATE)
+        .getBoolean("reminders_enabled", true)
+}
+
     }
 
     private var waterMl = 0
@@ -35,6 +53,9 @@ class WaterService : Service() {
         loadData()
         resetIfNewDay()
         startForeground(1, createNotification())
+        if (remindersEnabled()) {
+    scheduleReminder()
+}
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -49,8 +70,9 @@ class WaterService : Service() {
     // ---------- CORE LOGIC ----------
 
     private fun addWater() {
-        waterMl += GLASS_ML
-        glasses = waterMl / GLASS_ML
+       waterMl += glassSize()
+glasses = waterMl / glassSize()
+
         saveData()
         updateNotification()
         scheduleReminder()
@@ -87,10 +109,12 @@ class WaterService : Service() {
 
     private fun scheduleReminder() {
         handler.removeCallbacks(reminderRunnable)
-        handler.postDelayed(
-            reminderRunnable,
-            REMINDER_DELAY_MINUTES * 2 * 1000
-        )
+        if (remindersEnabled()) {
+    handler.postDelayed(
+        reminderRunnable,
+        reminderDelayMinutes() * 60 * 1000
+    )
+}
     }
 
     private fun showReminderNotification() {
@@ -125,7 +149,7 @@ class WaterService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("💧 Water Tracker")
             .setContentText(
-                "Water Today: $glasses / $DAILY_GOAL_GLASSES glasses ($waterMl ml)"
+                "Water Today: $glasses / ${dailyGoal()} glasses ($waterMl ml)"
             )
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .addAction(0, "+250 ml", pendingIntent)
