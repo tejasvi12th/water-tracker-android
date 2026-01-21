@@ -39,6 +39,7 @@ val glasses = waterMl / glassSize
         findViewById<Button>(R.id.settingsButton).setOnClickListener {
     startActivity(Intent(this, SettingsActivity::class.java))
 }
+    }
 override fun onResume() {
     super.onResume()
 
@@ -61,4 +62,4 @@ override fun onResume() {
             // History screen coming next
         }
     }
-}
+
