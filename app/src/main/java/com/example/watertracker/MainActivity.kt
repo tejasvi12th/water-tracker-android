@@ -11,7 +11,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        startService(Intent(this, WaterService::class.java))
+        startForegroundService(Intent(this, WaterService::class.java))
 
         val text = findViewById<TextView>(R.id.textView)
         text.text = "Water Tracker is running 💧"
