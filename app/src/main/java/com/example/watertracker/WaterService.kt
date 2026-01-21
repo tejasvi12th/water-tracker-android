@@ -30,6 +30,37 @@ class WaterService : Service() {
     private val reminderRunnable = Runnable {
         showReminderNotification()
     }
+    private fun calculateStreak(): Int {
+    val prefs = applicationContext.getSharedPreferences("water_prefs", MODE_PRIVATE)
+    val settings = applicationContext.getSharedPreferences("settings_prefs", MODE_PRIVATE)
+
+    val glassSize = settings.getInt("glass_size", 250)
+    val goal = settings.getInt("daily_goal", 16)
+
+    var streak = 0
+    var failedDays = 0
+
+    for (date in last7Days()) {
+        val ml = prefs.getInt("history_$date", -1)
+
+        if (ml == -1) {
+            failedDays++
+        } else {
+            val glasses = ml / glassSize
+            if (glasses < goal) {
+                failedDays++
+            }
+        }
+
+        if (failedDays > 1) break
+        streak++
+    }
+
+    // Save streak so MainActivity can show it
+    prefs.edit().putInt("streak", streak).apply()
+
+    return streak
+}
 
     // ---------- LIFECYCLE ----------
 
@@ -38,7 +69,7 @@ class WaterService : Service() {
         loadData()
         resetIfNewDay()
         startForeground(1, createNotification())
-
+        calculateStreak()
         if (remindersEnabled()) {
             scheduleReminder()
         }
@@ -59,7 +90,7 @@ class WaterService : Service() {
         val glassSize = glassSize()
         waterMl += glassSize
         glasses = waterMl / glassSize
-
+        calculateStreak()
         saveData()
         updateNotification()
         scheduleReminder()
@@ -77,13 +108,19 @@ class WaterService : Service() {
 
     // ---------- STORAGE ----------
 
-    private fun saveData() {
-        val prefs = applicationContext.getSharedPreferences("water_prefs", MODE_PRIVATE)
-        prefs.edit()
-            .putInt("water_ml", waterMl)
-            .putString("date", lastDate)
-            .apply()
-    }
+   private fun saveData() {
+    val prefs = applicationContext.getSharedPreferences("water_prefs", MODE_PRIVATE)
+
+    prefs.edit()
+        .putInt("water_ml", waterMl)
+        .putString("date", lastDate)
+        // save daily history
+        .putInt("history_$lastDate", waterMl)
+        .apply()
+        calculateStreak()
+
+}
+
 
     private fun loadData() {
         val prefs = applicationContext.getSharedPreferences("water_prefs", MODE_PRIVATE)
@@ -118,7 +155,7 @@ class WaterService : Service() {
             .getSharedPreferences("settings_prefs", MODE_PRIVATE)
             .getBoolean("reminders_enabled", true)
     }
-
+    
     // ---------- REMINDER ----------
 
     private fun scheduleReminder() {
@@ -194,4 +231,17 @@ class WaterService : Service() {
         return SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             .format(Date())
     }
+    private fun last7Days(): List<String> {
+    val dates = mutableListOf<String>()
+    val cal = java.util.Calendar.getInstance()
+
+    for (i in 0 until 7) {
+        val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            .format(cal.time)
+        dates.add(date)
+        cal.add(java.util.Calendar.DAY_OF_YEAR, -1)
+    }
+    return dates
+}
+
 }
