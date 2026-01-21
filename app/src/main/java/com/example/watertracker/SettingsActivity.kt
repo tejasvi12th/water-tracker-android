@@ -26,14 +26,20 @@ class SettingsActivity : AppCompatActivity() {
         reminderSwitch.isChecked = prefs.getBoolean("reminders_enabled", true)
 
         findViewById<Button>(R.id.saveButton).setOnClickListener {
-            prefs.edit()
-                .putInt("glass_size", glassSizeInput.text.toString().toInt())
-                .putInt("daily_goal", dailyGoalInput.text.toString().toInt())
-                .putInt("reminder_delay", reminderDelayInput.text.toString().toInt())
-                .putBoolean("reminders_enabled", reminderSwitch.isChecked)
-                .apply()
+          prefs.edit()
+    .putInt("glass_size", glassSizeInput.text.toString().toInt())
+    .putInt("daily_goal", dailyGoalInput.text.toString().toInt())
+    .putInt("reminder_delay", reminderDelayInput.text.toString().toInt())
+    .putBoolean("reminders_enabled", reminderSwitch.isChecked)
+    .apply()
 
-            finish()
+val intent = Intent(this, WaterService::class.java).apply {
+    action = WaterService.ACTION_REFRESH
+}
+startService(intent)
+
+finish()
+
         }
     }
 }
